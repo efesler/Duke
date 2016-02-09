@@ -143,7 +143,7 @@ public class TestFileListener extends AbstractMatchListener {
       Record r2 = database.findRecordById(link.getID2());
       if (r1 != null && r2 != null) {
         if (debug && !showmatches)
-          PrintMatchListener.show(r1, r2, processor.compare(r1, r2),
+          PrintMatchListener.show(r1, r2, processor.compare(r1, r2).getProb(),
                                   "\nNOT FOUND", props, pretty);
       } else if (debug && !showmatches) {
         System.out.println("\nIDENTITIES IN TEST FILE NOT FOUND IN DATA");

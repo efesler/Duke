@@ -614,7 +614,7 @@ public class GeneticAlgorithm {
       for (int ix = 0; ix < configs.size(); ix++) {
         Configuration config = configs.get(ix).getConfiguration();
         Processor proc = new Processor(config, database);
-        believers[ix] = proc.compare(r1, r2) > config.getThreshold();
+        believers[ix] = proc.compare(r1, r2).getProb() > config.getThreshold();
       }
       return believers;
     }

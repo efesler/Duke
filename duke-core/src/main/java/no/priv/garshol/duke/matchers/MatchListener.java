@@ -3,6 +3,7 @@ package no.priv.garshol.duke.matchers;
 
 import java.util.Collection;
 
+import no.priv.garshol.duke.CompareResult;
 import no.priv.garshol.duke.Record;
 
 /**
@@ -29,13 +30,13 @@ public interface MatchListener {
    * Notification that the two records match. There will have been a
    * previous startRecord(r1) notification.
    */
-  public void matches(Record r1, Record r2, double confidence);
+  public void matches(Record r1, Record r2, CompareResult compareResult);
 
   /**
    * Notification that the two records might match. There will have
    * been a previous startRecord(r1) notification.
    */
-  public void matchesPerhaps(Record r1, Record r2, double confidence);
+  public void matchesPerhaps(Record r1, Record r2, CompareResult compareResult);
 
   /**
    * Called if no link is found for the record.

@@ -524,14 +524,15 @@ public class Processor {
       if (isSameAs(record, candidate))
         continue;
 
-      double prob = compare(record, candidate);
+      CompareResult compareResult = compare(record, candidate);
+      double prob = compareResult.getProb();
       if (prob > config.getThreshold()) {
         found = true;
-        registerMatch(record, candidate, prob);
+        registerMatch(record, candidate, compareResult);
       } else if (config.getMaybeThreshold() != 0.0 &&
                  prob > config.getMaybeThreshold()) {
         found = true; // I guess?
-        registerMatchPerhaps(record, candidate, prob);
+        registerMatchPerhaps(record, candidate, compareResult);
       }
     }
     if (!found)
@@ -545,16 +546,19 @@ public class Processor {
                                          Collection<Record> candidates) {
     double max = 0.0;
     Record best = null;
+    CompareResult bestResult = null;
 
     // go through all candidates, and find the best
     for (Record candidate : candidates) {
       if (isSameAs(record, candidate))
         continue;
 
-      double prob = compare(record, candidate);
+      CompareResult compareResult = compare(record, candidate);
+      double prob = compareResult.getProb();
       if (prob > max) {
         max = prob;
         best = candidate;
+        bestResult = compareResult;
       }
     }
 
@@ -563,10 +567,10 @@ public class Processor {
       logger.debug("Best candidate at " + max + " is " + best);
     }
     if (max > config.getThreshold())
-      registerMatch(record, best, max);
+      registerMatch(record, best, bestResult);
     else if (config.getMaybeThreshold() != 0.0 &&
              max > config.getMaybeThreshold())
-      registerMatchPerhaps(record, best, max);
+      registerMatchPerhaps(record, best, bestResult);
     else
       registerNoMatchFor(record);
   }
@@ -575,9 +579,10 @@ public class Processor {
    * Compares two records and returns the probability that they
    * represent the same real-world entity.
    */
-  public double compare(Record r1, Record r2) {
+  public CompareResult compare(Record r1, Record r2) {
     comparisons++;
     double prob = 0.5;
+    CompareResult result = new CompareResult(prob);
     for (String propname : r1.getProperties()) {
       Property prop = config.getPropertyByName(propname);
       if (prop == null)
@@ -611,8 +616,9 @@ public class Processor {
       }
 
       prob = Utils.computeBayes(prob, high);
+      result.addResult(propname, high, prob);
     }
-    return prob;
+    return result;
   }
 
   /**
@@ -753,20 +759,20 @@ public class Processor {
   /**
    * Records the statement that the two records match.
    */
-  private void registerMatch(Record r1, Record r2, double confidence) {
+  private void registerMatch(Record r1, Record r2, CompareResult compareResult) {
     long start = System.currentTimeMillis();
     for (MatchListener listener : listeners)
-      listener.matches(r1, r2, confidence);
+      listener.matches(r1, r2, compareResult);
     callbacks += (System.currentTimeMillis() - start);
   }
 
   /**
    * Records the statement that the two records may match.
    */
-  private void registerMatchPerhaps(Record r1, Record r2, double confidence) {
+  private void registerMatchPerhaps(Record r1, Record r2, CompareResult compareResult) {
     long start = System.currentTimeMillis();
     for (MatchListener listener : listeners)
-      listener.matchesPerhaps(r1, r2, confidence);
+      listener.matchesPerhaps(r1, r2, compareResult);
     callbacks += (System.currentTimeMillis() - start);
   }
 

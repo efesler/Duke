@@ -5,10 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import no.priv.garshol.duke.CompactRecord;
-import no.priv.garshol.duke.Link;
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.RecordImpl;
+import no.priv.garshol.duke.*;
 import no.priv.garshol.duke.matchers.AbstractMatchListener;
 
 import static org.junit.Assert.assertEquals;
@@ -76,11 +73,11 @@ public class TestUtils {
       records += size;
     }
     
-    public void matches(Record r1, Record r2, double confidence) {
-      matches.add(new Pair(r1, r2, confidence));
+    public void matches(Record r1, Record r2, CompareResult compareResult) {
+      matches.add(new Pair(r1, r2, compareResult.getProb()));
     }
 
-    public void matchesPerhaps(Record r1, Record r2, double confidence) {
+    public void matchesPerhaps(Record r1, Record r2, CompareResult compareResult) {
       maybes++;
     }
     

@@ -1,6 +1,7 @@
 
 package no.priv.garshol.duke.matchers;
 
+import no.priv.garshol.duke.CompareResult;
 import no.priv.garshol.duke.Record;
 
 /**
@@ -15,10 +16,10 @@ public abstract class AbstractMatchListener implements MatchListener {
   public void batchDone() {
   }
 
-  public void matches(Record r1, Record r2, double confidence) {
+  public void matches(Record r1, Record r2, CompareResult compareResult) {
   }
   
-  public void matchesPerhaps(Record r1, Record r2, double confidence) {
+  public void matchesPerhaps(Record r1, Record r2, CompareResult compareResult) {
   }
 
   public void noMatchFor(Record record) {
