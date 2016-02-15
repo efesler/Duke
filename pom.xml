@@ -79,44 +79,44 @@ TO PUBLISH SNAPSHOTS
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-core</artifactId>
-                <version>1.3.2-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-core</artifactId>
-                <version>1.3.2-SNAPSHOT</version>
+                <version>${project.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-mapdb</artifactId>
-                <version>1.3-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-lucene</artifactId>
-                <version>1.3.1-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-server</artifactId>
-                <version>1.3-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-mongodb</artifactId>
-                <version>1.3-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-json</artifactId>
-                <version>1.3-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-es</artifactId>
-                <version>1.3-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -163,6 +163,7 @@ TO PUBLISH SNAPSHOTS
                 </plugin>
             </plugins>
         </pluginManagement>
+
     </build>
 
     <!-- adding the Sonatype stuff to a profile, so it can be turned off -->
@@ -170,7 +171,7 @@ TO PUBLISH SNAPSHOTS
         <profile>
             <id>sonatype</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
             </activation>
 
             <build>
@@ -250,9 +251,9 @@ TO PUBLISH SNAPSHOTS
 
     <!-- this is necessary to get the buildnumber plugin to work -->
     <scm>
-        <connection>scm:git:git@github.com:larsga/Duke.git</connection>
-        <developerConnection>scm:git:git@github.com:larsga/Duke.git</developerConnection>
-        <url>https://github.com/larsga/Duke</url>
+        <connection>scm:git:git@gitlab.audaxis.com:mdm-rossel/Duke.git</connection>
+        <developerConnection>scm:git:git@gitlab.audaxis.com:mdm-rossel/Duke.git</developerConnection>
+        <url>https://gitlab.audaxis.com/mdm-rossel/Duke</url>
     </scm>
 
     <!-- the below is included because Sonatype hosting requires it -->
@@ -276,5 +277,52 @@ TO PUBLISH SNAPSHOTS
             </roles>
             <timezone>+1</timezone>
         </developer>
+        <developer>
+            <id>efesler</id>
+            <name>Eric Fesler</name>
+            <email>eric@audaxis.com</email>
+            <url>http://www.audaxis.com</url>
+            <roles>
+                <role>contributor</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
     </developers>
+
+    <distributionManagement>
+        <repository>
+            <id>archiva.internal</id>
+            <name>Internal Release Repository</name>
+            <url>http://archiva.audaxis.com/repository/internal/</url>
+        </repository>
+        <snapshotRepository>
+            <id>archiva.snapshots</id>
+            <name>Internal Snapshot Repository</name>
+            <url>http://archiva.audaxis.com/repository/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+    <repositories>
+        <repository>
+            <id>archiva.internal</id>
+            <name>Internal Release Repository</name>
+            <url>http://archiva.audaxis.com/repository/internal/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>archiva.snapshots</id>
+            <name>Internal Snapshot Repository</name>
+            <url>http://archiva.audaxis.com/repository/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>
