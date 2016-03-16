@@ -3,11 +3,14 @@ package no.priv.garshol.duke.databases.es;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.common.collect.Iterables;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.DukeConfigException;
@@ -33,8 +36,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.collect.Iterables;
-import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -78,7 +80,8 @@ public class ElasticSearchDatabase implements Database {
 		this.clientSniff = true;
 
 		// local client/node defaults
-		this.storageType = StorageType.MEMORY;
+		//this.storageType = StorageType.MEMORY;
+		this.storageType = StorageType.DISK;
 		this.clientOnly = false;
 		this.local = true;
 
@@ -158,8 +161,8 @@ public class ElasticSearchDatabase implements Database {
 
 		// disable index refresh interval to improve indexing performance
 		// this is enabled back in commit()
-		ImmutableSettings.Builder indexSettings = ImmutableSettings
-				.settingsBuilder();
+		Settings.Builder indexSettings = Settings.settingsBuilder();
+
 		indexSettings.put("refresh_interval", -1);
 		this.client.admin().indices().prepareUpdateSettings(this.indexName)
 				.setSettings(indexSettings).execute().actionGet();
@@ -168,8 +171,7 @@ public class ElasticSearchDatabase implements Database {
 	}
 
 	private void setupConnection() {
-		ImmutableSettings.Builder settings = ImmutableSettings
-				.settingsBuilder();
+		Settings.Builder settings = Settings.settingsBuilder();
 		settings.put("cluster.name", this.cluster);
 
 		if (this.tAddresses == null) {
@@ -204,21 +206,25 @@ public class ElasticSearchDatabase implements Database {
 			this.client = this.node.client();
 
 		} else {
+			try {
+				settings.put("client.transport.sniff", this.clientSniff);
 
-			settings.put("client.transport.sniff", this.clientSniff);
+				this.client = TransportClient.builder().settings(settings).build();
 
-			this.client = new TransportClient(settings.build());
-
-			for (String address : this.tAddresses) {
-				String[] hostparts = address.split(":");
-				String hostname = hostparts[0];
-				int hostport = HOST_PORT_DEFAULT;
-				if (hostparts.length == 2) {
-					hostport = Integer.parseInt(hostparts[1]);
+				for (String address : this.tAddresses) {
+					String[] hostparts = address.split(":");
+					String hostname = hostparts[0];
+					int hostport = HOST_PORT_DEFAULT;
+					if (hostparts.length == 2) {
+						hostport = Integer.parseInt(hostparts[1]);
+					}
+					((TransportClient) client)
+							.addTransportAddress(new InetSocketTransportAddress(
+									InetAddress.getByName(hostname), hostport));
 				}
-				((TransportClient) client)
-						.addTransportAddress(new InetSocketTransportAddress(
-								hostname, hostport));
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+				throw new IllegalStateException(e);
 			}
 		}
 
@@ -281,14 +287,16 @@ public class ElasticSearchDatabase implements Database {
 					.refresh(new RefreshRequest(this.indexName)).actionGet();
 
 			// enable index auto refresh
-			ImmutableSettings.Builder indexSettings = ImmutableSettings
+			Settings.Builder indexSettings = Settings
 					.settingsBuilder();
 			indexSettings.put("refresh_interval", 1);
 			this.client.admin().indices().prepareUpdateSettings(this.indexName)
 					.setSettings(indexSettings).execute().actionGet();
 
+			/*
 			this.client.admin().indices().prepareOptimize(this.indexName)
 					.setMaxNumSegments(5).execute().actionGet();
+					*/
 		}
 	}
 
@@ -338,7 +346,7 @@ public class ElasticSearchDatabase implements Database {
 			if (queryString.length() <= 0)
 				continue;
 			QueryStringQueryBuilder qsqb = QueryBuilders
-					.queryString(queryString.toString().trim())
+					.queryStringQuery(queryString.toString().trim())
 					.defaultField(propName).boost(boostFactor);
 			bqb = required ? bqb.must(qsqb) : bqb.should(qsqb);
 
