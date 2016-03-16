@@ -64,6 +64,16 @@ public class ElasticSearchDatabase implements Database {
 	private String dataFolder;
 	private Collection<String> tAddresses;
 
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
+	}
+
+	private String path;
+
 	private Analyzer analyzer;
 	private BulkRequestBuilder bulkRequest;
 	private int bulkRequestCounter;
@@ -91,6 +101,7 @@ public class ElasticSearchDatabase implements Database {
 									// smarter with this
 		this.maxSearchHits = 100;
 		this.bulkSize = 5000;
+		this.path = ".";
 
 		this.analyzer = new StandardAnalyzer();
 	}
@@ -200,6 +211,8 @@ public class ElasticSearchDatabase implements Database {
 				settings.put("index.store.type", "memory");
 			}
 
+			settings.put("path.home", this.getPath());
+
 			builder.settings(settings.build());
 			this.node = builder.client(this.clientOnly).local(this.local)
 					.node();
@@ -289,7 +302,7 @@ public class ElasticSearchDatabase implements Database {
 			// enable index auto refresh
 			Settings.Builder indexSettings = Settings
 					.settingsBuilder();
-			indexSettings.put("refresh_interval", 1);
+			indexSettings.put("refresh_interval", "1s");
 			this.client.admin().indices().prepareUpdateSettings(this.indexName)
 					.setSettings(indexSettings).execute().actionGet();
 
