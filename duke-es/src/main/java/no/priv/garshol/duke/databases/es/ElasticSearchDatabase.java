@@ -61,6 +61,15 @@ public class ElasticSearchDatabase implements Database {
 	private boolean local;
 	private boolean clientSniff;
 	private StorageType storageType;
+
+	public String getDataFolder() {
+		return dataFolder;
+	}
+
+	public void setDataFolder(String dataFolder) {
+		this.dataFolder = dataFolder;
+	}
+
 	private String dataFolder;
 	private Collection<String> tAddresses;
 
