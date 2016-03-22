@@ -52,7 +52,7 @@ public class ElasticSearchDatabase implements Database {
 
 	private Configuration config;
 	private Property idProperty;
-	private boolean overwrite;
+	private boolean overwrite = false;
 
 	private Client client;
 	private Node node;
@@ -123,13 +123,14 @@ public class ElasticSearchDatabase implements Database {
 				.exists(new IndicesExistsRequest(indexName)).actionGet();
 
 		boolean forceCreate = false;
-		if (response.isExists() && !this.overwrite) {
+		if (response.isExists() && this.overwrite) {
 			client.admin().indices().prepareDelete(this.indexName).execute()
 					.actionGet();
 			forceCreate = true;
 		}
 
 		if (!response.isExists() || forceCreate) {
+			System.out.println("Create new index : force " + forceCreate + "resp: " + response.isExists() + "overwritex: " + this.overwrite );
 			CreateIndexResponse create = client.admin().indices()
 					.prepareCreate(indexName).execute().actionGet();
 			try {
