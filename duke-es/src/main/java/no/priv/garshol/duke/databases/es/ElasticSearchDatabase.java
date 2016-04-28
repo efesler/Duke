@@ -130,7 +130,7 @@ public class ElasticSearchDatabase implements Database {
 		}
 
 		if (!response.isExists() || forceCreate) {
-			System.out.println("Create new index : force " + forceCreate + "resp: " + response.isExists() + "overwritex: " + this.overwrite );
+			System.out.println("Create new index : force " + forceCreate + "resp: " + response.isExists() + "overwrite: " + this.overwrite );
 			CreateIndexResponse create = client.admin().indices()
 					.prepareCreate(indexName).execute().actionGet();
 			try {
@@ -374,7 +374,6 @@ public class ElasticSearchDatabase implements Database {
 			bqb = required ? bqb.must(qsqb) : bqb.should(qsqb);
 
 		}
-
 		SearchResponse response = this.client.prepareSearch(this.indexName)
 				.setTypes(this.indexType)
 				.setSearchType(SearchType.DFS_QUERY_THEN_FETCH).setQuery(bqb)
@@ -455,7 +454,7 @@ public class ElasticSearchDatabase implements Database {
 	}
 
 	private Float getBoostFactor(double probability) {
-		return (float) Math.sqrt(1.0 / ((1.0 - probability) * 2.0));
+		return (float) Math.sqrt(1.0 / ((1.0001 - probability) * 2.0));
 	}
 
 	public String getCluster() {
