@@ -58,4 +58,20 @@ public class CompareResult {
         setProb(prob);
         probDetail.put(prop, propProb);
     }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Result: ");
+        sb.append(getProb());
+        sb.append("\n");
+
+        for (String key: getProbDetail().keySet()) {
+            sb.append("field: ");
+            sb.append(key);
+            sb.append(" (").append(getProbDetail().get(key)).append(")\n");
+        }
+
+        return sb.toString();
+    }
 }

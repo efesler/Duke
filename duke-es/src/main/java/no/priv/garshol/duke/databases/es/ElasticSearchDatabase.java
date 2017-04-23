@@ -5,10 +5,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import com.google.common.collect.Iterables;
 import no.priv.garshol.duke.Configuration;
@@ -18,6 +15,7 @@ import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordImpl;
+import no.priv.garshol.duke.matchers.PrintMatchListener;
 import no.priv.garshol.duke.utils.Utils;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -44,8 +42,13 @@ import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.elasticsearch.search.SearchHit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ElasticSearchDatabase implements Database {
+
+	private static final transient Logger logger = LoggerFactory.getLogger( ElasticSearchDatabase.class.getName() );
+
 
 	private static final int HOST_PORT_DEFAULT = 9300;
 	private static final String[] DATA_SUBDIRS = { "data", "work", "logs" };
@@ -334,6 +337,10 @@ public class ElasticSearchDatabase implements Database {
 
 	@Override
 	public Collection<Record> findCandidateMatches(Record record) {
+		if (this.client == null) {
+			this.init();
+		}
+
 		Collection<Record> records = new ArrayList<Record>();
 
 		BoolQueryBuilder bqb = QueryBuilders.boolQuery();
@@ -374,6 +381,12 @@ public class ElasticSearchDatabase implements Database {
 			bqb = required ? bqb.must(qsqb) : bqb.should(qsqb);
 
 		}
+
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Query String: " + bqb.toString());
+		}
+
 		SearchResponse response = this.client.prepareSearch(this.indexName)
 				.setTypes(this.indexType)
 				.setSearchType(SearchType.DFS_QUERY_THEN_FETCH).setQuery(bqb)
@@ -381,7 +394,11 @@ public class ElasticSearchDatabase implements Database {
 
 		SearchHit[] results = response.getHits().getHits();
 		for (SearchHit hit : results) {
-			records.add(this.readFromSource(hit.getId(), hit.getSource()));
+			Record rec = this.readFromSource(hit.getId(), hit.getSource());
+			records.add(rec);
+			if (logger.isDebugEnabled()) {
+				logger.debug(("Record: (" + hit.getScore() + ") " + PrintMatchListener.toString(rec, config.getProperties())));
+			}
 		}
 
 		return records;
@@ -454,7 +471,8 @@ public class ElasticSearchDatabase implements Database {
 	}
 
 	private Float getBoostFactor(double probability) {
-		return (float) Math.sqrt(1.0 / ((1.0001 - probability) * 2.0));
+		if (probability >= 1) return Float.MAX_VALUE;
+		else return (float) Math.sqrt(1.0 / ((1 - probability) * 2.0));
 	}
 
 	public String getCluster() {

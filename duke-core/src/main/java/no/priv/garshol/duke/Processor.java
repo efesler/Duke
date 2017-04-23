@@ -265,7 +265,7 @@ public class Processor {
     batchDone();
   }
 
-  private void match(Collection<Record> records, boolean matchall) {
+  public void match(Collection<Record> records, boolean matchall) {
     if (threads == 1)
       for (Record record : records)
         match(1, record, matchall);
@@ -490,10 +490,12 @@ public class Processor {
     long start = System.currentTimeMillis();
     Collection<Record> candidates = getDB(dbno).findCandidateMatches(record);
     searching += System.currentTimeMillis() - start;
-    if (logger.isDebugEnabled())
+    if (logger.isDebugEnabled()) {
       logger.debug("Matching record " +
-                   PrintMatchListener.toString(record, config.getProperties()) +
-                   " found " + candidates.size() + " candidates");
+              PrintMatchListener.toString(record, config.getProperties()) +
+              " found " + candidates.size() + " candidates");
+
+    }
 
     start = System.currentTimeMillis();
     if (matchall)
@@ -564,11 +566,16 @@ public class Processor {
         best = candidate;
         bestResult = compareResult;
       }
+
+      if (logger.isDebugEnabled()) {
+        logger.debug(compareResult.toString());
+      }
     }
 
     // pass on the best match, if any
     if (logger.isDebugEnabled()) {
       logger.debug("Best candidate at " + max + " is " + best);
+      logger.debug("limits: " + config.getThreshold() + " - " + config.getMaybeThreshold());
     }
     if (max > config.getThreshold())
       registerMatch(record, best, bestResult);

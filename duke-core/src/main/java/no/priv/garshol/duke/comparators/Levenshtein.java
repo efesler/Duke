@@ -17,7 +17,7 @@ import no.priv.garshol.duke.Comparator;
  * <p>To see which algorithms are implemented, see comments on
  * individual methods.
  */
-public class Levenshtein implements Comparator {
+public class  Levenshtein implements Comparator {
 
   public double compare(String s1, String s2) {   
     int len = Math.min(s1.length(), s2.length());
